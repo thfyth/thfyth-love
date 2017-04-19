@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>观察Watchers</title>
+	<script src="js/vue.js" charset="utf-8"></script>
+</head>
+<body>
+	<div id="watch">
+		<p>Ask a yes/no question:</p>
+		<input v-model="question">
+		<p>{{ answer }}</p>
+	</div>
+	<script src="https://unpkg.com/axios@0.12.0/dist/axios.min.js"></script>
+	<script src="https://unpkg.com/lodash@4.13.1/lodash.min.js"></script>
+	<script>
+		var watch=new Vue({
+			el:'#watch',
+			data:{
+				question:'',
+				answer:'i dont none question'
+			},
+			watch:{
+				// 如果question发生改变，这个这个函数会运行
+				question:function(newQuestion){
+					this.answer='waiting you answer'
+					this.getAnswer()
+				}
+			},
+			methods:{
+				getAnswer:_.debounce(
+						function(){
+							var vm =this
+							if(this.question.indexOf('?') === -1){
+								vm.answer="question usually a question mark,:-"
+								return
+							}
+							vm.answer='Thinking....'
+							axios.get('https://yesno.wtf/api')
+							.then(function(response){
+								vm.answer=_.capitalize(response.data.answer)
+							})
+							.catch(function (error){
+								vm.answer='Error!no no no '+error
+							})
+						},
+						// 为用户停止输入等待的毫秒数
+						500
+					)
+			}
+		})
+	</script>
+</body>
+</html>
